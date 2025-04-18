@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delete All Files</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+        
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f5f5f5;
+            transition: background-color 0.3s;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        #deleteBtn {
+            width: 80%;
+            height: 300px;
+            max-width: 600px;
+            background-color: #ff4444;
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 3rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(255, 68, 68, 0.3);
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        #deleteBtn:hover {
+            background-color: #ff0000;
+            transform: translateY(-5px);
+            box-shadow: 0 15px 25px rgba(255, 68, 68, 0.4);
+        }
+        
+        #deleteBtn:active {
+            transform: translateY(0);
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            animation: modalFadeIn 0.3s;
+        }
+        
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: translateY(-50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .modal h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 25px;
+        }
+        
+        .modal-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .confirm-btn {
+            background-color: #ff4444;
+            color: white;
+        }
+        
+        .confirm-btn:hover {
+            background-color: #ff0000;
+        }
+        
+        .cancel-btn {
+            background-color: #e0e0e0;
+            color: #333;
+        }
+        
+        .cancel-btn:hover {
+            background-color: #cccccc;
+        }
+        
+        .password-container {
+            margin: 20px 0;
+            display: none;
+        }
+        
+        .password-container input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            margin-bottom: 10px;
+        }
+        
+        .error-message {
+            color: #ff4444;
+            font-size: 0.9rem;
+            margin-top: 5px;
+            display: none;
+        }
+        
+        @media (max-width: 768px) {
+            #deleteBtn {
+                height: 200px;
+                font-size: 2rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            #deleteBtn {
+                height: 150px;
+                font-size: 1.5rem;
+            }
+            
+            .modal-content {
+                padding: 20px;
+            }
+            
+            .modal-buttons {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .modal-btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button id="deleteBtn">Delete All</button>
+    </div>
+    
+    <!-- Confirmation Modal -->
+    <div class="modal" id="confirmationModal">
+        <div class="modal-content">
+            <h2>Do you want to delete all files?</h2>
+            <p>This action cannot be undone. All files will be permanently deleted.</p>
+            
+            <div class="password-container" id="passwordContainer">
+                <input type="password" id="passwordInput" placeholder="Enter password to confirm">
+                <p class="error-message" id="errorMessage">Incorrect password. Please try again.</p>
+            </div>
+            
+            <div class="modal-buttons" id="confirmationButtons">
+                <button class="modal-btn confirm-btn" id="confirmBtn">Yes, Delete All</button>
+                <button class="modal-btn cancel-btn" id="cancelBtn">Cancel</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // DOM Elements
+        const deleteBtn = document.getElementById('deleteBtn');
+        const confirmationModal = document.getElementById('confirmationModal');
+        const passwordContainer = document.getElementById('passwordContainer');
+        const passwordInput = document.getElementById('passwordInput');
+        const confirmBtn = document.getElementById('confirmBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const errorMessage = document.getElementById('errorMessage');
+        const confirmationButtons = document.getElementById('confirmationButtons');
+        
+        // Correct password (in a real app, this would be server-side verified)
+        const CORRECT_PASSWORD = "Word@Manni";
+        
+        // URL to open after successful password verification
+        const REDIRECT_URL = "https://example.com/deletion-confirmed";
+        
+        // Open confirmation modal when button is clicked
+        deleteBtn.addEventListener('click', () => {
+            confirmationModal.style.display = 'flex';
+            passwordContainer.style.display = 'none';
+            errorMessage.style.display = 'none';
+            confirmationButtons.style.display = 'flex';
+            confirmBtn.textContent = 'Yes, Delete All';
+        });
+        
+        // First confirmation (Yes button)
+        confirmBtn.addEventListener('click', () => {
+            if (passwordContainer.style.display === 'none') {
+                // First confirmation - show password field
+                passwordContainer.style.display = 'block';
+                confirmBtn.textContent = 'Confirm Password';
+            } else {
+                // Password verification
+                if (passwordInput.value === CORRECT_PASSWORD) {
+                    // Password correct - proceed with action
+                    window.location.href = REDIRECT_URL;
+                } else {
+                    // Password incorrect - show error
+                    errorMessage.style.display = 'block';
+                    passwordInput.value = '';
+                    passwordInput.focus();
+                }
+            }
+        });
+        
+        // Cancel button closes modal
+        cancelBtn.addEventListener('click', () => {
+            confirmationModal.style.display = 'none';
+            passwordInput.value = '';
+        });
+        
+        // Close modal when clicking outside of it
+        confirmationModal.addEventListener('click', (e) => {
+            if (e.target === confirmationModal) {
+                confirmationModal.style.display = 'none';
+                passwordInput.value = '';
+            }
+        });
+        
+        // Handle Enter key in password field
+        passwordInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                confirmBtn.click();
+            }
+        });
+    </script>
+</body>
+</html>
