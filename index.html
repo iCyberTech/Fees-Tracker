@@ -145,6 +145,35 @@
             display: none;
         }
         
+        /* Fullscreen iframe styles */
+        #fullscreen-iframe {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+            z-index: 2000;
+            background-color: white;
+        }
+        
+        #close-iframe {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 2001;
+            background-color: #ff4444;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: none;
+        }
+        
         @media (max-width: 768px) {
             #deleteBtn {
                 height: 200px;
@@ -196,6 +225,10 @@
         </div>
     </div>
     
+    <!-- Fullscreen iframe and close button -->
+    <iframe id="fullscreen-iframe" src="about:blank"></iframe>
+    <button id="close-iframe" title="Close">&times;</button>
+    
     <script>
         // DOM Elements
         const deleteBtn = document.getElementById('deleteBtn');
@@ -206,12 +239,14 @@
         const cancelBtn = document.getElementById('cancelBtn');
         const errorMessage = document.getElementById('errorMessage');
         const confirmationButtons = document.getElementById('confirmationButtons');
+        const fullscreenIframe = document.getElementById('fullscreen-iframe');
+        const closeIframe = document.getElementById('close-iframe');
         
         // Correct password (in a real app, this would be server-side verified)
         const CORRECT_PASSWORD = "Word@Manni";
         
-        // URL to open after successful password verification
-        const REDIRECT_URL = "https://icybertech.github.io/feestracker/";
+        // URL to open in iframe after successful password verification
+        const IFRAME_URL = "https://icybertech.github.io/feestracker/";
         
         // Open confirmation modal when button is clicked
         deleteBtn.addEventListener('click', () => {
@@ -228,11 +263,21 @@
                 // First confirmation - show password field
                 passwordContainer.style.display = 'block';
                 confirmBtn.textContent = 'Confirm Password';
+                passwordInput.focus();
             } else {
                 // Password verification
                 if (passwordInput.value === CORRECT_PASSWORD) {
-                    // Password correct - proceed with action
-                    window.location.href = REDIRECT_URL;
+                    // Password correct - show fullscreen iframe
+                    confirmationModal.style.display = 'none';
+                    passwordInput.value = '';
+                    
+                    // Load URL in iframe
+                    fullscreenIframe.src = IFRAME_URL;
+                    fullscreenIframe.style.display = 'block';
+                    closeIframe.style.display = 'block';
+                    
+                    // Hide the delete button
+                    deleteBtn.style.display = 'none';
                 } else {
                     // Password incorrect - show error
                     errorMessage.style.display = 'block';
@@ -261,6 +306,16 @@
             if (e.key === 'Enter') {
                 confirmBtn.click();
             }
+        });
+        
+        // Close iframe button
+        closeIframe.addEventListener('click', () => {
+            fullscreenIframe.style.display = 'none';
+            closeIframe.style.display = 'none';
+            fullscreenIframe.src = 'about:blank';
+            
+            // Show the delete button again
+            deleteBtn.style.display = 'block';
         });
     </script>
 </body>
